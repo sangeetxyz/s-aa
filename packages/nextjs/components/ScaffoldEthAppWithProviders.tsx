@@ -1,18 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { RainbowKitProvider, darkTheme, lightTheme } from "@rainbow-me/rainbowkit";
+import { useEffect } from "react";
+import { cookieStorage, createConfig } from "@alchemy/aa-alchemy/config";
+import { AlchemyAccountProvider } from "@alchemy/aa-alchemy/react";
+import { arbitrumSepolia } from "@alchemy/aa-core";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useTheme } from "next-themes";
 import { Toaster } from "react-hot-toast";
-import { WagmiProvider } from "wagmi";
 import { Footer } from "~~/components/Footer";
-import { Header } from "~~/components/Header";
-import { BlockieAvatar } from "~~/components/scaffold-eth";
+import { Header } from "~~/components/header/Header";
 import { ProgressBar } from "~~/components/scaffold-eth/ProgressBar";
 import { useNativeCurrencyPrice } from "~~/hooks/scaffold-eth";
 import { useGlobalState } from "~~/services/store/store";
-import { wagmiConfig } from "~~/services/web3/wagmiConfig";
 
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   const price = useNativeCurrencyPrice();
@@ -44,26 +42,20 @@ export const queryClient = new QueryClient({
   },
 });
 
+const alchemyAccountConfig = createConfig({
+  rpcUrl: "/api/rpc/chain/" + arbitrumSepolia.id,
+  ssr: true,
+  chain: arbitrumSepolia,
+  storage: cookieStorage,
+});
+
 export const ScaffoldEthAppWithProviders = ({ children }: { children: React.ReactNode }) => {
-  const { resolvedTheme } = useTheme();
-  const isDarkMode = resolvedTheme === "dark";
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   return (
-    <WagmiProvider config={wagmiConfig}>
-      <QueryClientProvider client={queryClient}>
-        <ProgressBar />
-        <RainbowKitProvider
-          avatar={BlockieAvatar}
-          theme={mounted ? (isDarkMode ? darkTheme() : lightTheme()) : lightTheme()}
-        >
-          <ScaffoldEthApp>{children}</ScaffoldEthApp>
-        </RainbowKitProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
+    <QueryClientProvider client={queryClient}>
+      <ProgressBar />
+      <AlchemyAccountProvider config={alchemyAccountConfig} queryClient={queryClient}>
+        <ScaffoldEthApp>{children}</ScaffoldEthApp>
+      </AlchemyAccountProvider>
+    </QueryClientProvider>
   );
 };
