@@ -16,7 +16,7 @@ export const wagmiConfig = createConfig({
   client({ chain }) {
     return createClient({
       chain,
-      transport: http("/api/rpc/chain/1"),
+      transport: http("/api/rpc/chain/" + targetNetworks[0].id),
       pollingInterval: scaffoldConfig.pollingInterval,
     });
   },

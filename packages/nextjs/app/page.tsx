@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useUser } from "@alchemy/aa-alchemy/react";
+import { useAccount } from "@alchemy/aa-alchemy/react";
 import type { NextPage } from "next";
 import { BugAntIcon } from "@heroicons/react/24/outline";
 import { Address } from "~~/components/scaffold-eth";
@@ -13,7 +13,7 @@ declare global {
 }
 
 const Home: NextPage = () => {
-  const user = useUser();
+  const { account } = useAccount({ type: "MultiOwnerModularAccount" });
 
   return (
     <>
@@ -25,7 +25,7 @@ const Home: NextPage = () => {
           </h1>
           <div className="flex justify-center items-center space-x-2">
             <p className="my-2 font-medium">Connected Address:</p>
-            <Address address={user?.address} />
+            <Address address={account?.address} />
           </div>
           <p className="text-center text-lg">
             Get started by editing{" "}

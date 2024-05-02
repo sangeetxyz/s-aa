@@ -6,11 +6,13 @@ import { AlchemyAccountProvider } from "@alchemy/aa-alchemy/react";
 import { arbitrumSepolia } from "@alchemy/aa-core";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
+import { WagmiProvider } from "wagmi";
 import { Footer } from "~~/components/Footer";
 import { Header } from "~~/components/header/Header";
 import { ProgressBar } from "~~/components/scaffold-eth/ProgressBar";
 import { useNativeCurrencyPrice } from "~~/hooks/scaffold-eth";
 import { useGlobalState } from "~~/services/store/store";
+import { wagmiConfig } from "~~/services/web3/wagmiConfig";
 
 const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
   const price = useNativeCurrencyPrice();
@@ -44,6 +46,9 @@ export const queryClient = new QueryClient({
 
 const alchemyAccountConfig = createConfig({
   rpcUrl: "/api/rpc/chain/" + arbitrumSepolia.id,
+  signerConnection: {
+    rpcUrl: "/api/rpc/",
+  },
   ssr: true,
   chain: arbitrumSepolia,
   storage: cookieStorage,
@@ -51,11 +56,13 @@ const alchemyAccountConfig = createConfig({
 
 export const ScaffoldEthAppWithProviders = ({ children }: { children: React.ReactNode }) => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ProgressBar />
-      <AlchemyAccountProvider config={alchemyAccountConfig} queryClient={queryClient}>
-        <ScaffoldEthApp>{children}</ScaffoldEthApp>
-      </AlchemyAccountProvider>
-    </QueryClientProvider>
+    <WagmiProvider config={wagmiConfig}>
+      <QueryClientProvider client={queryClient}>
+        <ProgressBar />
+        <AlchemyAccountProvider config={alchemyAccountConfig} queryClient={queryClient}>
+          <ScaffoldEthApp>{children}</ScaffoldEthApp>
+        </AlchemyAccountProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
   );
 };

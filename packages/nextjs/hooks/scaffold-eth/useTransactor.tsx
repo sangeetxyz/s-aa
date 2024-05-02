@@ -1,6 +1,6 @@
+import { SmartAccountClient } from "@alchemy/aa-core";
 import { getPublicClient } from "@wagmi/core";
-import { Hash, SendTransactionParameters, WalletClient } from "viem";
-import { useWalletClient } from "wagmi";
+import { Hash, SendTransactionParameters } from "viem";
 import { wagmiConfig } from "~~/services/web3/wagmiConfig";
 import { getBlockExplorerTxLink, getParsedError, notification } from "~~/utils/scaffold-eth";
 import { TransactorFuncOptions } from "~~/utils/scaffold-eth/contract";
@@ -31,15 +31,9 @@ const TxnNotification = ({ message, blockExplorerLink }: { message: string; bloc
  * @param _walletClient - Optional wallet client to use. If not provided, will use the one from useWalletClient.
  * @returns function that takes in transaction function as callback, shows UI feedback for transaction and returns a promise of the transaction hash
  */
-export const useTransactor = (_walletClient?: WalletClient): TransactionFunc => {
-  let walletClient = _walletClient;
-  const { data } = useWalletClient();
-  if (walletClient === undefined && data) {
-    walletClient = data;
-  }
-
+export const useTransactor = ({ client }: { client?: SmartAccountClient }): TransactionFunc => {
   const result: TransactionFunc = async (tx, options) => {
-    if (!walletClient) {
+    if (!client) {
       notification.error("Cannot access account");
       console.error("⚡️ ~ file: useTransactor.tsx ~ error");
       return;
@@ -48,17 +42,15 @@ export const useTransactor = (_walletClient?: WalletClient): TransactionFunc => 
     let notificationId = null;
     let transactionHash: Hash | undefined = undefined;
     try {
-      const network = await walletClient.getChainId();
+      const network = await client.getChainId();
       // Get full transaction from public client
       const publicClient = getPublicClient(wagmiConfig);
 
-      notificationId = notification.loading(<TxnNotification message="Awaiting for user confirmation" />);
+      notificationId = notification.loading(<TxnNotification message="Sending User Operation" />);
       if (typeof tx === "function") {
         // Tx is already prepared by the caller
         const result = await tx();
         transactionHash = result;
-      } else if (tx != null) {
-        transactionHash = await walletClient.sendTransaction(tx);
       } else {
         throw new Error("Incorrect transaction passed to transactor");
       }

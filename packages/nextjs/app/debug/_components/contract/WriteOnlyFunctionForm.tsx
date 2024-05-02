@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { InheritanceTooltip } from "./InheritanceTooltip";
+import { useSendUserOperation, useSmartAccountClient } from "@alchemy/aa-alchemy/react";
 import { Abi, AbiFunction } from "abitype";
-import { Address, TransactionReceipt } from "viem";
-import { useAccount, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { Address, Hex, TransactionReceipt, encodeFunctionData } from "viem";
+import { useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import {
   ContractInput,
   TxReceipt,
@@ -15,7 +16,6 @@ import {
 } from "~~/app/debug/_components/contract";
 import { IntegerInput } from "~~/components/scaffold-eth";
 import { useTransactor } from "~~/hooks/scaffold-eth";
-import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
 
 type WriteOnlyFunctionFormProps = {
   abi: Abi;
@@ -32,26 +32,44 @@ export const WriteOnlyFunctionForm = ({
   contractAddress,
   inheritedFrom,
 }: WriteOnlyFunctionFormProps) => {
+  const { client } = useSmartAccountClient({
+    type: "MultiOwnerModularAccount",
+    gasManagerConfig: {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      policyId: process.env.NEXT_PUBLIC_ALCHEMY_GAS_MANAGER_POLICY_ID!,
+    },
+    opts: {
+      txMaxRetries: 20,
+    },
+  });
+  const { sendUserOperationAsync, isSendingUserOperation } = useSendUserOperation({
+    client,
+  });
   const [form, setForm] = useState<Record<string, any>>(() => getInitialFormState(abiFunction));
   const [txValue, setTxValue] = useState<string | bigint>("");
-  const { chain } = useAccount();
-  const writeTxn = useTransactor();
-  const { targetNetwork } = useTargetNetwork();
-  const writeDisabled = !chain || chain?.id !== targetNetwork.id;
+  const writeTxn = useTransactor({ client });
+  const writeDisabled = !client?.account;
 
-  const { data: result, isPending, writeContractAsync } = useWriteContract();
+  const { data: result } = useWriteContract();
 
   const handleWrite = async () => {
-    if (writeContractAsync) {
+    if (client) {
       try {
-        const makeWriteWithParams = () =>
-          writeContractAsync({
-            address: contractAddress,
+        const makeWriteWithParams: () => Promise<Hex> = async () => {
+          const data = encodeFunctionData({
+            abi,
             functionName: abiFunction.name,
-            abi: abi,
             args: getParsedContractFunctionArgs(form),
-            value: BigInt(txValue),
           });
+          const uo = await sendUserOperationAsync({
+            uo: {
+              target: contractAddress,
+              value: BigInt(txValue),
+              data,
+            },
+          });
+          return client.waitForUserOperationTransaction(uo);
+        };
         await writeTxn(makeWriteWithParams);
         onChange();
       } catch (e: any) {
@@ -124,8 +142,12 @@ export const WriteOnlyFunctionForm = ({
             }`}
             data-tip={`${writeDisabled && "Wallet not connected or in the wrong network"}`}
           >
-            <button className="btn btn-secondary btn-sm" disabled={writeDisabled || isPending} onClick={handleWrite}>
-              {isPending && <span className="loading loading-spinner loading-xs"></span>}
+            <button
+              className="btn btn-secondary btn-sm"
+              disabled={writeDisabled || isSendingUserOperation}
+              onClick={handleWrite}
+            >
+              {isSendingUserOperation && <span className="loading loading-spinner loading-xs"></span>}
               Send 💸
             </button>
           </div>
