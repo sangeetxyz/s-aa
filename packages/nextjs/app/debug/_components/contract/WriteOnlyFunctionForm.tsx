@@ -25,6 +25,8 @@ type WriteOnlyFunctionFormProps = {
   inheritedFrom?: string;
 };
 
+const policyId = process.env.NEXT_PUBLIC_ALCHEMY_GAS_MANAGER_POLICY_ID;
+
 export const WriteOnlyFunctionForm = ({
   abi,
   abiFunction,
@@ -32,11 +34,14 @@ export const WriteOnlyFunctionForm = ({
   contractAddress,
   inheritedFrom,
 }: WriteOnlyFunctionFormProps) => {
+  if (!policyId) {
+    throw new Error("gas policy not set!");
+  }
+
   const { client } = useSmartAccountClient({
     type: "MultiOwnerModularAccount",
     gasManagerConfig: {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      policyId: process.env.NEXT_PUBLIC_ALCHEMY_GAS_MANAGER_POLICY_ID!,
+      policyId,
     },
     opts: {
       txMaxRetries: 20,

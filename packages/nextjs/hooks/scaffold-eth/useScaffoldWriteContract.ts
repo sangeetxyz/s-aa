@@ -23,7 +23,7 @@ const policyId = process.env.NEXT_PUBLIC_ALCHEMY_GAS_MANAGER_POLICY_ID;
  * @param contractName - name of the contract to be written to
  * @param writeContractParams - wagmi's useWriteContract parameters
  */
-export const useScaffoldEncodeFunctionCalldata = <TContractName extends ContractName>(
+export const useScaffoldWriteContract = <TContractName extends ContractName>(
   contractName: TContractName,
   writeContractParams?: UseWriteContractParameters,
 ) => {
@@ -52,8 +52,6 @@ export const useScaffoldEncodeFunctionCalldata = <TContractName extends Contract
   const sendContractWriteAsyncTx = async <
     TFunctionName extends ExtractAbiFunctionNames<ContractAbi<TContractName>, "nonpayable" | "payable">,
   >(
-    functionName: TFunctionName,
-    args: readonly unknown[] | undefined,
     variables: ScaffoldWriteContractVariables<TContractName, TFunctionName>,
     options?: ScaffoldWriteContractOptions,
   ) => {
@@ -74,8 +72,8 @@ export const useScaffoldEncodeFunctionCalldata = <TContractName extends Contract
       const makeWriteWithParams: () => Promise<Hex> = async () => {
         const data = encodeFunctionData({
           abi: deployedContractData.abi as Abi,
-          functionName: functionName as string,
-          args,
+          functionName: variables.functionName as string,
+          args: variables.args as unknown[],
         });
         const uo = await sendUserOperationAsync({
           uo: {
