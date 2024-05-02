@@ -1,11 +1,7 @@
 import { useState } from "react";
 import { useSendUserOperation, useSmartAccountClient } from "@alchemy/aa-alchemy/react";
-import { MutateOptions } from "@tanstack/react-query";
 import { Abi, ExtractAbiFunctionNames } from "abitype";
 import { Hex, encodeFunctionData } from "viem";
-import { Config, UseWriteContractParameters, useWriteContract } from "wagmi";
-import { WriteContractErrorType, WriteContractReturnType } from "wagmi/actions";
-import { WriteContractVariables } from "wagmi/query";
 import { useDeployedContractInfo, useTransactor } from "~~/hooks/scaffold-eth";
 import { notification } from "~~/utils/scaffold-eth";
 import {
@@ -18,15 +14,11 @@ import {
 const policyId = process.env.NEXT_PUBLIC_ALCHEMY_GAS_MANAGER_POLICY_ID;
 
 /**
- * Wrapper around wagmi's useWriteContract hook which automatically loads (by name) the contract ABI and address from
- * the contracts present in deployedContracts.ts & externalContracts.ts corresponding to targetNetworks configured in scaffold.config.ts
+ * this hook automatically loads (by name) the contract ABI and address from
+ * the contracts present in deployedContracts.ts & externalContracts.ts
  * @param contractName - name of the contract to be written to
- * @param writeContractParams - wagmi's useWriteContract parameters
  */
-export const useScaffoldWriteContract = <TContractName extends ContractName>(
-  contractName: TContractName,
-  writeContractParams?: UseWriteContractParameters,
-) => {
+export const useScaffoldWriteContract = <TContractName extends ContractName>(contractName: TContractName) => {
   if (!policyId) {
     throw new Error("gas policy not set!");
   }
@@ -44,8 +36,6 @@ export const useScaffoldWriteContract = <TContractName extends ContractName>(
 
   const writeTx = useTransactor({ client });
   const [isMining, setIsMining] = useState(false);
-
-  const wagmiContractWrite = useWriteContract(writeContractParams);
 
   const { data: deployedContractData } = useDeployedContractInfo(contractName);
 
@@ -107,29 +97,24 @@ export const useScaffoldWriteContract = <TContractName extends ContractName>(
       return;
     }
 
-    wagmiContractWrite.writeContract(
-      {
-        abi: deployedContractData.abi as Abi,
-        address: deployedContractData.address,
-        ...variables,
-      } as WriteContractVariables<Abi, string, any[], Config, number>,
-      options as
-        | MutateOptions<
-            WriteContractReturnType,
-            WriteContractErrorType,
-            WriteContractVariables<Abi, string, any[], Config, number>,
-            unknown
-          >
-        | undefined,
-    );
+    const data = encodeFunctionData({
+      abi: deployedContractData.abi as Abi,
+      functionName: variables.functionName as string,
+      args: variables.args as unknown[],
+    });
+    sendUserOperationAsync({
+      uo: {
+        target: deployedContractData.address,
+        value: BigInt(variables.value || 0),
+        data,
+      },
+      ...options,
+    });
   };
 
   return {
-    ...wagmiContractWrite,
     isMining,
-    // Overwrite wagmi's writeContactAsync
     writeContractAsync: sendContractWriteAsyncTx,
-    // Overwrite wagmi's writeContract
     writeContract: sendContractWriteTx,
   };
 };
