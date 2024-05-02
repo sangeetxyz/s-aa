@@ -1,4 +1,6 @@
 import React from "react";
+import Image from "next/image";
+import { useTheme } from "next-themes";
 import { CurrencyDollarIcon } from "@heroicons/react/24/outline";
 import { HeartIcon } from "@heroicons/react/24/outline";
 import { SwitchTheme } from "~~/components/SwitchTheme";
@@ -10,6 +12,9 @@ import { useGlobalState } from "~~/services/store/store";
  */
 export const Footer = () => {
   const nativeCurrencyPrice = useGlobalState(state => state.nativeCurrencyPrice);
+  const { resolvedTheme } = useTheme();
+
+  const isDarkMode = resolvedTheme === "dark";
 
   return (
     <div className="min-h-0 py-5 px-1 mb-11 lg:mb-0">
@@ -32,7 +37,12 @@ export const Footer = () => {
         <ul className="menu menu-horizontal w-full">
           <div className="flex justify-center items-center gap-2 text-sm w-full">
             <div className="text-center">
-              <a href="https://github.com/scaffold-eth/se-2" target="_blank" rel="noreferrer" className="link">
+              <a
+                href="https://github.com/alchemyplatform/scaffold-aa"
+                target="_blank"
+                rel="noreferrer"
+                className="link"
+              >
                 Fork me
               </a>
             </div>
@@ -50,11 +60,15 @@ export const Footer = () => {
                 <BuidlGuidlLogo className="w-3 h-5 pb-1" />
                 <span className="link">BuidlGuidl</span>
               </a>
-            </div>
-            <span>·</span>
-            <div className="text-center">
-              <a href="https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA" target="_blank" rel="noreferrer" className="link">
-                Support
+              and
+              <a
+                className="flex justify-center items-center gap-1"
+                href="https://www.alchemy.com"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <Image src={isDarkMode ? "/alchemy-light.png" : "/alchemy.png"} width={16} height={16} alt="Alchemy" />
+                <span className="link">Alchemy</span>
               </a>
             </div>
           </div>
