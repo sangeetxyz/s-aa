@@ -32,7 +32,7 @@ export const useScaffoldWriteContract = <TContractName extends ContractName>(con
       txMaxRetries: 20,
     },
   });
-  const { sendUserOperationAsync } = useSendUserOperation({ client });
+  const { sendUserOperationAsync, sendUserOperation } = useSendUserOperation({ client });
 
   const writeTx = useTransactor({ client });
   const [isMining, setIsMining] = useState(false);
@@ -102,7 +102,7 @@ export const useScaffoldWriteContract = <TContractName extends ContractName>(con
       functionName: variables.functionName as string,
       args: variables.args as unknown[],
     });
-    sendUserOperationAsync({
+    sendUserOperation({
       uo: {
         target: deployedContractData.address,
         value: BigInt(variables.value || 0),
