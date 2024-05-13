@@ -1,7 +1,5 @@
 import { SmartAccountClient } from "@alchemy/aa-core";
-import { getPublicClient } from "@wagmi/core";
 import { Hash, SendTransactionParameters } from "viem";
-import { wagmiConfig } from "~~/services/web3/wagmiConfig";
 import { getBlockExplorerTxLink, getParsedError, notification } from "~~/utils/scaffold-eth";
 import { TransactorFuncOptions } from "~~/utils/scaffold-eth/contract";
 
@@ -43,8 +41,6 @@ export const useTransactor = ({ client }: { client?: SmartAccountClient }): Tran
     let transactionHash: Hash | undefined = undefined;
     try {
       const network = await client.getChainId();
-      // Get full transaction from public client
-      const publicClient = getPublicClient(wagmiConfig);
 
       notificationId = notification.loading(<TxnNotification message="Sending User Operation" />);
       if (typeof tx === "function") {
@@ -62,7 +58,7 @@ export const useTransactor = ({ client }: { client?: SmartAccountClient }): Tran
         <TxnNotification message="Waiting for transaction to complete." blockExplorerLink={blockExplorerTxURL} />,
       );
 
-      const transactionReceipt = await publicClient.waitForTransactionReceipt({
+      const transactionReceipt = await client.waitForTransactionReceipt({
         hash: transactionHash,
         confirmations: options?.blockConfirmations,
       });
