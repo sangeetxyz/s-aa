@@ -10,7 +10,7 @@ export const useWatchBalance = (useBalanceParameters: UseBalanceParameters) => {
   const { targetNetwork } = useTargetNetwork();
   const queryClient = useQueryClient();
   const { data: blockNumber } = useBlockNumber({ watch: true, chainId: targetNetwork.id });
-  const { queryKey, ...restUseBalanceReturn } = useBalance(useBalanceParameters);
+  const { queryKey, ...restUseBalanceReturn } = useBalance({ chainId: targetNetwork.id, ...useBalanceParameters });
 
   useEffect(() => {
     queryClient.invalidateQueries({ queryKey });
