@@ -1,3 +1,5 @@
+import { SupportedAccountTypes } from "@alchemy/aa-alchemy/config";
+import { arbitrumSepolia } from "@alchemy/aa-core";
 import { Chain, createClient, http } from "viem";
 import { mainnet } from "viem/chains";
 import { createConfig } from "wagmi";
@@ -10,6 +12,8 @@ export const enabledChains = targetNetworks.find((network: Chain) => network.id 
   ? targetNetworks
   : ([...targetNetworks, mainnet] as const);
 
+export const chain = arbitrumSepolia;
+
 export const wagmiConfig = createConfig({
   chains: enabledChains,
   ssr: true,
@@ -21,3 +25,5 @@ export const wagmiConfig = createConfig({
     });
   },
 });
+
+export const accountType: SupportedAccountTypes = "MultiOwnerModularAccount";
