@@ -1,6 +1,6 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
-import { Contract } from "ethers";
+// import { Contract } from "ethers";
 
 /**
  * Deploys a contract named "YourContract" using the deployer account and
@@ -33,7 +33,7 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   });
 
   // Get the deployed contract to interact with it after deploying.
-  const AAAuthToken = await hre.ethers.getContract<Contract>("AAAuthToken", deployer);
+  // const AAAuthToken = await hre.ethers.getContract<Contract>("AAAuthToken", deployer);
   // console.log("👋 Initial greeting:", await AAAuthToken.greeting());
 };
 
