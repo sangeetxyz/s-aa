@@ -48,7 +48,7 @@ const Login = () => {
               href="https://mail.google.com/mail/u/0/#inbox"
               rel="noopener noreferrer"
               target="_blank"
-              className="self-end"
+              // className="self-end"
             >
               <Button>Check mail</Button>
             </Link>
@@ -70,9 +70,7 @@ const Login = () => {
                   </FormItem>
                 )}
               />
-              <div className="flex justify-end">
-                <Button type="submit">Submit</Button>
-              </div>
+              <Button type="submit">Submit</Button>
             </form>
           </Form>
         )}
