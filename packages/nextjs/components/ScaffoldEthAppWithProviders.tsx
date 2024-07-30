@@ -58,7 +58,7 @@ export const ScaffoldEthAppWithProviders = ({ children }: { children: React.Reac
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <ProgressBar />
+        {/* <ProgressBar /> */}
         <AlchemyAccountProvider config={alchemyAccountConfig} queryClient={queryClient}>
           <ScaffoldEthApp>{children}</ScaffoldEthApp>
         </AlchemyAccountProvider>
