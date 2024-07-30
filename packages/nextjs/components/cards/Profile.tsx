@@ -1,14 +1,17 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import CopyIcon from "../CopyIcon";
+import CopyIcon from "@/components/CopyIcon";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useAccount, useUser } from "@alchemy/aa-alchemy/react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useAccount, useLogout, useUser } from "@alchemy/aa-alchemy/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { BiLogOut } from "react-icons/bi";
 import { FiArrowUpRight } from "react-icons/fi";
 import MoonLoader from "react-spinners/MoonLoader";
 import { toast } from "sonner";
@@ -19,9 +22,11 @@ import { getShortenAddress } from "~~/lib/utils";
 import { accountType, chain } from "~~/services/web3/wagmiConfig";
 
 export const Grid = () => {
-  const mintAmount = 1;
+  const [txType, setTxType] = useState(0);
+  const mintAmount = 10;
   const user = useUser();
   const { address } = useAccount({ type: accountType });
+  const { logout } = useLogout();
   const { data: balance, refetch } = useScaffoldReadContract({
     contractName: "AAAuthToken",
     functionName: "balanceOf",
@@ -59,10 +64,12 @@ export const Grid = () => {
     if (balance === undefined || BigInt(values.amount) > balance) {
       return toast.error("Insufficient balance");
     }
+    setTxType(2);
     await writeContractAsync({
       functionName: "transfer",
       args: [values.receiver, parseEther(values.amount)],
     });
+    setTxType(0);
     refetch();
     toast.success(`Transferred ${values.amount} tokens`);
   };
@@ -71,17 +78,19 @@ export const Grid = () => {
     if (isMining) {
       return toast.error("Transaction is pending");
     }
+    setTxType(1);
     await writeContractAsync({
       functionName: "mint",
       args: [address, parseEther(mintAmount.toString())],
     });
+    setTxType(0);
     refetch();
     toast.success(`Minted ${mintAmount} tokens`);
   };
 
   return (
-    <div className="flex space-x-2">
-      <div className="flex flex-col space-y-2 w-80">
+    <div className="flex md:space-x-4 flex-col md:flex-row space-y-4 md:space-y-0">
+      <div className="flex flex-col space-y-4 md:w-80">
         {/* token balance */}
         <Card>
           <CardHeader>
@@ -102,13 +111,14 @@ export const Grid = () => {
           </CardContent>
           <CardFooter>
             <Button
+              disabled={isMining}
               variant={"default"}
               size={"sm"}
               onClick={() => {
                 handleMint();
               }}
             >
-              {isMining ? (
+              {isMining && txType === 1 ? (
                 <div className="flex items-center space-x-2">
                   <MoonLoader size={12} color={"#09090B"} />
                   <div className="">Minting... </div>
@@ -165,8 +175,15 @@ export const Grid = () => {
                 )}
               </div>
             )}
+            {!address && (
+              <div className="flex flex-col space-y-3 pt-1">
+                <Skeleton className="w-40 h-4 rounded-full" />
+                <Skeleton className="w-20 h-4 rounded-full" />
+                <Skeleton className="w-28 h-4 rounded-full" />
+              </div>
+            )}
           </CardContent>
-          <CardFooter>
+          <CardFooter className="flex justify-between ">
             <Link
               href={`${chain.blockExplorers?.default.url}/address/${address}`}
               target="_blank"
@@ -177,10 +194,18 @@ export const Grid = () => {
                 <FiArrowUpRight size={16} className="pt-0.5" />
               </Button>
             </Link>
+            <BiLogOut
+              size={20}
+              className="cursor-pointer text-zinc-200"
+              onClick={() => {
+                logout();
+                toast.success("Logged out");
+              }}
+            />
           </CardFooter>
         </Card>
       </div>
-      <div className="flex flex-col space-y-2 w-80">
+      <div className="flex flex-col space-y-4 md:w-80">
         {/* transfer token */}
         <Card>
           <CardHeader>
@@ -218,8 +243,8 @@ export const Grid = () => {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" size={"sm"}>
-                  {isMining ? (
+                <Button disabled={isMining} type="submit" size={"sm"}>
+                  {isMining && txType === 2 ? (
                     <div className="flex items-center space-x-2">
                       <MoonLoader size={12} color={"#09090B"} />
                       <div className="">Transferring...</div>

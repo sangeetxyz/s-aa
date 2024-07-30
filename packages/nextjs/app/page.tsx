@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useSignerStatus } from "@alchemy/aa-alchemy/react";
+import MoonLoader from "react-spinners/MoonLoader";
 import Login from "~~/components/cards/Login";
 import { Grid } from "~~/components/cards/Profile";
 
@@ -13,23 +14,13 @@ const Home = () => {
   const isLoading = isInitializing || (isAuthenticating && status !== "AWAITING_EMAIL_AUTH");
 
   return (
-    <div className="flex items-center justify-center h-screen">
+    <div className="flex items-center justify-center min-h-screen p-4">
       {isLoading ? (
-        <div>
-          <div>loading</div>
-        </div>
+        <MoonLoader size={26} color={"#E2E2E2"} />
       ) : isConnected ? ( // modify this line
-        <div>
-          <div>
-            <Grid />
-          </div>
-        </div>
+        <Grid />
       ) : (
-        <div>
-          <div>
-            <Login />
-          </div>
-        </div>
+        <Login />
       )}
     </div>
   );

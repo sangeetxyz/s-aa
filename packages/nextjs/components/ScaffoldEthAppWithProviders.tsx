@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { Toaster } from "@/components/ui/sonner";
 import { cookieStorage, createConfig } from "@alchemy/aa-alchemy/config";
 import { AlchemyAccountProvider } from "@alchemy/aa-alchemy/react";
 import { arbitrumSepolia } from "@alchemy/aa-core";
@@ -26,14 +27,8 @@ const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <>
-      {/* //   <div className="flex flex-col min-h-screen">
-    //     <Header />
-    //     <main className="relative flex flex-col flex-1"> */}
       {children}
-      {/* // </main>
-      //   <Footer />
-      // </div>
-      // <Toaster /> */}
+      <Toaster />
     </>
   );
 };
