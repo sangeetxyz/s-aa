@@ -5,11 +5,11 @@ import { cookieStorage, createConfig } from "@alchemy/aa-alchemy/config";
 import { AlchemyAccountProvider } from "@alchemy/aa-alchemy/react";
 import { arbitrumSepolia } from "@alchemy/aa-core";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "react-hot-toast";
 import { WagmiProvider } from "wagmi";
-import { Footer } from "~~/components/Footer";
-import { Header } from "~~/components/header/Header";
-import { ProgressBar } from "~~/components/scaffold-eth/ProgressBar";
+// import { Toaster } from "react-hot-toast";
+// import { Footer } from "~~/components/Footer";
+// import { Header } from "~~/components/header/Header";
+// import { ProgressBar } from "~~/components/scaffold-eth/ProgressBar";
 import { useNativeCurrencyPrice } from "~~/hooks/scaffold-eth";
 import { useGlobalState } from "~~/services/store/store";
 import { wagmiConfig } from "~~/services/web3/wagmiConfig";
@@ -26,12 +26,14 @@ const ScaffoldEthApp = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <>
-      <div className="flex flex-col min-h-screen">
-        <Header />
-        <main className="relative flex flex-col flex-1">{children}</main>
-        <Footer />
-      </div>
-      <Toaster />
+      {/* //   <div className="flex flex-col min-h-screen">
+    //     <Header />
+    //     <main className="relative flex flex-col flex-1"> */}
+      {children}
+      {/* // </main>
+      //   <Footer />
+      // </div>
+      // <Toaster /> */}
     </>
   );
 };
